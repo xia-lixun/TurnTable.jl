@@ -1,6 +1,6 @@
 module TurnTable
 using Printf
-using Compat, PyCall
+using PyCall
 
 
 const PySerial = PyCall.PyNULL()
@@ -48,23 +48,10 @@ end
        serialport(port, baudrate)
    end
 end
-function open(serialport::SerialPort)
-    serialport.python_ptr[:open]()
-    return serialport
-end
-function close(serialport::SerialPort)
-    serialport.python_ptr[:close]()
-    return serialport
-end
-function write(serialport::SerialPort, data::@compat UInt8)
-    serialport.python_ptr[:write](data)
-end
-function write(serialport::SerialPort, data::SerialString)
-    serialport.python_ptr[:write](data)
-end
-function read(ser::SerialPort, bytes::Integer)
-    ser.python_ptr[:read](bytes)
-end
+# serialport.python_ptr[:open]()
+
+
+
 
 
 
@@ -85,33 +72,38 @@ function list_serialports()
         [i[1] for i in collect(PySerialListPorts[:comports]())]
     end
 end
-device() = list_serialports()
+
     
 
 
 
 function setorigin(id; baudrate = 19200)
     s = SerialPort(id, baudrate)
-    write(s, "Get BaudRate" * string(Char(13)))
-    fb = read(s, 6)
-    info("baudrate: $fb")
+    s.python_ptr[:write](b"Get BaudRate\r")
+    y = s.python_ptr[:read](6)
+    @info "baudrate" y
 
     # disable analog input to prevent noise input (must)
-    write(s, "Set AnalogInput OFF " * string(Char(13)))
-    fb = read(s, 3)
-    write(s, "Set PulseInput OFF " * string(Char(13)))
-    fb = read(s, 3)
-    write(s, "Set Torque 70.0 " * string(Char(13)))
-    fb = read(s, 3)
-    write(s, "Set SmartTorque ON " * string(Char(13)))
-    fb = read(s, 3)
-    write(s, "Set Velocity 2.00 " * string(Char(13)))
-    fb = read(s, 3)
-    write(s, "Set Origin " * string(Char(13)))
-    fb = read(s, 3)
+    s.python_ptr[:write](b"Set AnalogInput OFF \r")
+    y = s.python_ptr[:read](3)
+    
+    s.python_ptr[:write](b"Set PulseInput OFF \r")
+    y = s.python_ptr[:read](3)
 
-    close(s)
-    return fb
+    s.python_ptr[:write](b"Set Torque 70.0 \r")
+    y = s.python_ptr[:read](3)
+
+    s.python_ptr[:write](b"Set SmartTorque ON \r")
+    y = s.python_ptr[:read](3)
+
+    s.python_ptr[:write](b"Set Velocity 2.00 \r")
+    y = s.python_ptr[:read](3)
+
+    s.python_ptr[:write](b"Set Origin \r")
+    y = s.python_ptr[:read](3)
+
+    s.python_ptr[:close]()
+    return y
 end
 
 
@@ -122,10 +114,10 @@ function rotate(id, degree; direction="CCW", baudrate=19200)
         d = "0" * d
     end
     s = SerialPort(id, baudrate)
-    write(s, "GoTo " * direction * " +" * d * " " * string(Char(13)))
-    fb = read(s, 3)
-    close(s)
-    return fb
+    s.python_ptr[:write](Vector{UInt8}("GoTo " * direction * " +" * d * " \r"))
+    y = s.python_ptr[:read](3)
+    s.python_ptr[:close]()
+    return y
 end
 
 
