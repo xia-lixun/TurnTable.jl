@@ -61,7 +61,7 @@ end
 """
 List available serialports on the system.
 """
-function list_serialports()
+function listserialports()
     @static if Sys.isunix()
         ports = readdir("/dev/")
         f = is_apple() ? _valid_darwin_port : _valid_linux_port
@@ -86,22 +86,16 @@ function setorigin(id; baudrate = 19200)
     # disable analog input to prevent noise input (must)
     s.python_ptr[:write](b"Set AnalogInput OFF \r")
     y = s.python_ptr[:read](3)
-    
     s.python_ptr[:write](b"Set PulseInput OFF \r")
     y = s.python_ptr[:read](3)
-
     s.python_ptr[:write](b"Set Torque 70.0 \r")
     y = s.python_ptr[:read](3)
-
     s.python_ptr[:write](b"Set SmartTorque ON \r")
     y = s.python_ptr[:read](3)
-
     s.python_ptr[:write](b"Set Velocity 2.00 \r")
     y = s.python_ptr[:read](3)
-
     s.python_ptr[:write](b"Set Origin \r")
     y = s.python_ptr[:read](3)
-
     s.python_ptr[:close]()
     return y
 end
