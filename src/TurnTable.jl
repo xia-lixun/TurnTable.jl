@@ -98,6 +98,7 @@ function setorigin(id; baudrate = 19200)
     s.python_ptr[:write](b"Set Origin \r")
     y = s.python_ptr[:read](3)
     s.python_ptr[:close]()
+    Libaudio.printl("C:/Drivers/Julia/run.log", :blink, Libaudio.nows() * " | TurnTable.setorigin: set current position as origin")
     return y
 end
 
@@ -113,7 +114,7 @@ function rotate(id, degree; direction="CCW", baudrate=19200)
     y = s.python_ptr[:read](3)
     s.python_ptr[:close]()
 
-    Libaudio.printl("C:/Drivers/Julia/run.log", :blink, Libaudio.nows() * " | TurnTable.rotate: moved to $(degree) deg. $(direction)")
+    Libaudio.printl("C:/Drivers/Julia/run.log", :blink, Libaudio.nows() * " | TurnTable.rotate: moved to degree $(degree) $(direction)")
     return y
 end
 
