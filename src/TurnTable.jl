@@ -1,6 +1,7 @@
 module TurnTable
 using Printf
 using PyCall
+using Libaudio
 
 
 const PySerial = PyCall.PyNULL()
@@ -81,7 +82,7 @@ function setorigin(id; baudrate = 19200)
     s = SerialPort(id, baudrate)
     s.python_ptr[:write](b"Get BaudRate\r")
     y = s.python_ptr[:read](6)
-    @info "baudrate" y
+    Libaudio.printl("C:/Drivers/Julia/run.log", :blink, Libaudio.nows() * " | TurnTable.setorigin: baudrate = $(y) bps")
 
     # disable analog input to prevent noise input (must)
     s.python_ptr[:write](b"Set AnalogInput OFF \r")
@@ -111,6 +112,8 @@ function rotate(id, degree; direction="CCW", baudrate=19200)
     s.python_ptr[:write](Vector{UInt8}("GoTo " * direction * " +" * d * " \r"))
     y = s.python_ptr[:read](3)
     s.python_ptr[:close]()
+
+    Libaudio.printl("C:/Drivers/Julia/run.log", :blink, Libaudio.nows() * " | TurnTable.rotate: moved to $(degree) deg. $(direction)")
     return y
 end
 
